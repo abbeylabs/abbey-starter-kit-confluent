@@ -1,0 +1,49 @@
+name: Abbey Grant Kit Generate Policy Input
+
+on:
+  pull_request:
+jobs:
+  output-plan:
+    runs-on: ubuntu-latest
+    env:
+      ABBEY_TOKEN: ${{ secrets.ABBEY_TOKEN }}
+      TF_VAR_confluent_cloud_api_key: ${{ secrets.CONFLUENT_CLOUD_API_KEY }}
+      TF_VAR_confluent_cloud_api_secret: ${{ secrets.CONFLUENT_CLOUD_API_SECRET }}
+      TF_VAR_kafka_api_key: ${{ secrets.KAFKA_API_KEY }}
+      TF_VAR_kafka_api_secret: ${{ secrets.KAFKA_API_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        id: setup
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          TF_HTTP_USERNAME: starter-kit
+          TF_HTTP_PASSWORD: ${{ secrets.ABBEY_TOKEN }}
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false -out=tfplan
+        env:
+          TF_HTTP_USERNAME: starter-kit
+          TF_HTTP_PASSWORD: ${{ secrets.ABBEY_TOKEN }}
+
+      - name: Terraform Show
+        id: show
+        run: echo "content=$(terraform show -no-color -json tfplan | jq '.variables.password |= "***" | tostring')" >> $GITHUB_OUTPUT
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ```json
+            ${{ fromJson(steps.show.outputs.content) }}
+            ```

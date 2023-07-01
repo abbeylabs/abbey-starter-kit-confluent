@@ -1,0 +1,38 @@
+name: Abbey Grant Kit Materialize
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      ABBEY_TOKEN: ${{ secrets.ABBEY_TOKEN }}
+      TF_VAR_confluent_cloud_api_key: ${{ secrets.CONFLUENT_CLOUD_API_KEY }}
+      TF_VAR_confluent_cloud_api_secret: ${{ secrets.CONFLUENT_CLOUD_API_SECRET }}
+      TF_VAR_kafka_api_key: ${{ secrets.KAFKA_API_KEY }}
+      TF_VAR_kafka_api_secret: ${{ secrets.KAFKA_API_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          TF_HTTP_USERNAME: starter-kit
+          TF_HTTP_PASSWORD: ${{ secrets.ABBEY_TOKEN }}
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
+        env:
+          TF_HTTP_USERNAME: starter-kit
+          TF_HTTP_PASSWORD: ${{ secrets.ABBEY_TOKEN }}
