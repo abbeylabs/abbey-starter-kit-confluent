@@ -69,15 +69,6 @@ resource "abbey_grant_kit" "confluent_pii_acl" {
   output = {
     location = "github://organization/repo/access.tf"
     append = <<-EOT
-      resource "kafka_acl" "principal_{{ .data.system.abbey.secondary_identities.kafka.principal }}" {
-        resource_name = "syslog"
-        resource_type = "Topic"
-        acl_principal = "User:{{ .data.system.abbey.secondary_identities.kafka.principal }}"
-        acl_host = "*"
-        acl_operation = "Read"
-        acl_permission_type = "Allow"
-      }
-
       resource "confluent_kafka_acl" "describe-basic-cluster" {
         resource_type = "CLUSTER"
         resource_name = "kafka-cluster"
