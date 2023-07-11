@@ -1,3 +1,9 @@
+variable "abbey_token" {
+  type = string
+  sensitive = true
+  description = "Abbey API Token"
+}
+
 variable "confluent_cloud_api_key" {
   type = string
   sensitive = true

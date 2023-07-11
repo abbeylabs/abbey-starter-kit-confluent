@@ -10,7 +10,7 @@ terraform {
   required_providers {
     abbey = {
       source = "abbeylabs/abbey"
-      version = "0.1.4"
+      version = "0.2.2"
     }
 
     confluent = {
@@ -22,6 +22,7 @@ terraform {
 
 provider "abbey" {
   # Configuration options
+  bearer_token = var.abbey_token
 }
 
 provider "confluent" {

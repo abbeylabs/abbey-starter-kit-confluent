@@ -6,7 +6,7 @@ jobs:
   output-plan:
     runs-on: ubuntu-latest
     env:
-      ABBEY_TOKEN: ${{ secrets.ABBEY_TOKEN }}
+      TF_VAR_abbey_token: ${{ secrets.ABBEY_TOKEN }}
       TF_VAR_confluent_cloud_api_key: ${{ secrets.CONFLUENT_CLOUD_API_KEY }}
       TF_VAR_confluent_cloud_api_secret: ${{ secrets.CONFLUENT_CLOUD_API_SECRET }}
       TF_VAR_kafka_api_key: ${{ secrets.KAFKA_API_KEY }}
