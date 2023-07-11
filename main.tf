@@ -27,8 +27,8 @@ provider "abbey" {
 
 provider "confluent" {
   # Configuration options
-  cloud_api_key    = var.confluent_cloud_api_key    # optionally use CONFLUENT_CLOUD_API_KEY env var
-  cloud_api_secret = var.confluent_cloud_api_secret # optionally use CONFLUENT_CLOUD_API_SECRET env var
+  cloud_api_key       = var.confluent_cloud_api_key    # optionally use CONFLUENT_CLOUD_API_KEY env var
+  cloud_api_secret    = var.confluent_cloud_api_secret # optionally use CONFLUENT_CLOUD_API_SECRET env var
 
   kafka_id            = var.kafka_id                   # optionally use KAFKA_ID env var
   kafka_rest_endpoint = var.kafka_rest_endpoint        # optionally use KAFKA_REST_ENDPOINT env var
@@ -50,22 +50,20 @@ resource "abbey_grant_kit" "confluent_pii_acl" {
     ]
   }
 
-  policies = {
-    grant_if = [
-      {
-        query = <<-EOT
-          package main
+  policies = [
+    {
+      query = <<-EOT
+        package main
 
-          import data.abbey.functions
+        import data.abbey.functions
 
-          allow[msg] {
-            true; functions.expire_after("24h")
-            msg := "granting access for 24 hours"
-          }
-        EOT
-      }
-    ]
-  }
+        allow[msg] {
+          true; functions.expire_after("24h")
+          msg := "granting access for 24 hours"
+        }
+      EOT
+    }
+  ]
 
   output = {
     location = "github://organization/repo/access.tf"
