@@ -10,7 +10,7 @@ terraform {
   required_providers {
     abbey = {
       source = "abbeylabs/abbey"
-      version = "0.2.2"
+      version = "0.2.4"
     }
 
     confluent = {
@@ -51,18 +51,7 @@ resource "abbey_grant_kit" "confluent_pii_acl" {
   }
 
   policies = [
-    {
-      query = <<-EOT
-        package main
-
-        import data.abbey.functions
-
-        allow[msg] {
-          true; functions.expire_after("24h")
-          msg := "granting access for 24 hours"
-        }
-      EOT
-    }
+    { bundle = "github://organization/repo/policies" }
   ]
 
   output = {
@@ -72,7 +61,7 @@ resource "abbey_grant_kit" "confluent_pii_acl" {
         resource_type = "CLUSTER"
         resource_name = "kafka-cluster"
         pattern_type  = "LITERAL"
-        principal     = "User:{{ .data.system.abbey.secondary_identities.confluent.principal }}
+        principal     = "User:{{ .data.system.abbey.identities.confluent.principal }}
         host          = "*"
         operation     = "DESCRIBE"
         permission    = "ALLOW"
@@ -86,20 +75,12 @@ resource "abbey_grant_kit" "confluent_pii_acl" {
 }
 
 resource "abbey_identity" "user_1" {
-  name = "replace-me"
+  abbey_account = "replace-me@example.com"
+  source = "confluent"
+  metadata = jsonencode(
+    {
+      principal = "replaceme"
+    }
+  )
 
-  linked = jsonencode({
-    abbey = [
-      {
-        type  = "AuthId"
-        value = "replace-me@example.com"
-      }
-    ]
-
-    confluent = [
-      {
-        principal = "replaceme"
-      }
-    ]
-  })
 }
