@@ -27,12 +27,12 @@ jobs:
         id: init
         run: terraform init
         env:
-          TF_HTTP_USERNAME: starter-kit
+          TF_HTTP_USERNAME: starter-kit-confluent
           TF_HTTP_PASSWORD: ${{ secrets.ABBEY_TOKEN }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
         env:
-          TF_HTTP_USERNAME: starter-kit
+          TF_HTTP_USERNAME: starter-kit-confluent
           TF_HTTP_PASSWORD: ${{ secrets.ABBEY_TOKEN }}
