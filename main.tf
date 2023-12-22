@@ -1,39 +1,9 @@
-terraform {
-  backend "http" {
-    address        = "https://api.abbey.io/terraform-http-backend"
-    lock_address   = "https://api.abbey.io/terraform-http-backend/lock"
-    unlock_address = "https://api.abbey.io/terraform-http-backend/unlock"
-    lock_method    = "POST"
-    unlock_method  = "POST"
-  }
+locals {
+  account_name = ""
+  repo_name = ""
 
-  required_providers {
-    abbey = {
-      source = "abbeylabs/abbey"
-      version = "0.2.4"
-    }
-
-    confluent = {
-      source = "confluentinc/confluent"
-      version = "1.47.0"
-    }
-  }
-}
-
-provider "abbey" {
-  # Configuration options
-  bearer_auth = var.abbey_token
-}
-
-provider "confluent" {
-  # Configuration options
-  cloud_api_key       = var.confluent_cloud_api_key    # optionally use CONFLUENT_CLOUD_API_KEY env var
-  cloud_api_secret    = var.confluent_cloud_api_secret # optionally use CONFLUENT_CLOUD_API_SECRET env var
-
-  kafka_id            = var.kafka_id                   # optionally use KAFKA_ID env var
-  kafka_rest_endpoint = var.kafka_rest_endpoint        # optionally use KAFKA_REST_ENDPOINT env var
-  kafka_api_key       = var.kafka_api_key              # optionally use KAFKA_API_KEY env var
-  kafka_api_secret    = var.kafka_api_secret           # optionally use KAFKA_API_SECRET env var
+  project_path = "github://${local.account_name}/${local.repo_name}"
+  policies_path = "${local.project_path}/policies"
 }
 
 resource "abbey_grant_kit" "confluent_pii_acl" {
@@ -44,24 +14,24 @@ resource "abbey_grant_kit" "confluent_pii_acl" {
     steps = [
       {
         reviewers = {
-          one_of = ["replace-me@example.com"]
+          one_of = ["replace-me@example.com"] # CHANGEME
         }
       }
     ]
   }
 
   policies = [
-    { bundle = "github://organization/repo/policies" }
+    { bundle = local.policies_path }
   ]
 
   output = {
-    location = "github://organization/repo/access.tf"
+    location = "${local.project_path}/access.tf"
     append = <<-EOT
       resource "confluent_kafka_acl" "describe-basic-cluster" {
         resource_type = "CLUSTER"
         resource_name = "kafka-cluster"
         pattern_type  = "LITERAL"
-        principal     = "User:{{ .data.system.abbey.identities.confluent.principal }}
+        principal     = "User:{{ .user.confluent.principal }}
         host          = "*"
         operation     = "DESCRIBE"
         permission    = "ALLOW"
@@ -72,15 +42,4 @@ resource "abbey_grant_kit" "confluent_pii_acl" {
       }
     EOT
   }
-}
-
-resource "abbey_identity" "user_1" {
-  abbey_account = "replace-me@example.com"
-  source = "confluent"
-  metadata = jsonencode(
-    {
-      principal = "replaceme"
-    }
-  )
-
 }
